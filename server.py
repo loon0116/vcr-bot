@@ -4,13 +4,12 @@ import os
 import time
 import urllib.request
 import urllib.parse
-import cgi
 import io
 
 # ================================================================
 # ★ 設定區 — 只需修改這裡
 # ================================================================
-GEMINI_API_KEY = 'AIzaSyCR0tveWh_qfkvb-6rxMDT3lZ9UAuJh7yw'
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyCR0tveWh_qfkvb-6rxMDT3lZ9UAuJh7yw')
 PORT           = int(os.environ.get('PORT', 3000))
 # ================================================================
 
@@ -359,22 +358,43 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 length = int(self.headers.get('Content-Length', 0))
                 body = self.rfile.read(length)
 
-                # 用 cgi 模組解析
-                environ = {
-                    'REQUEST_METHOD': 'POST',
-                    'CONTENT_TYPE': ct,
-                    'CONTENT_LENGTH': str(length),
-                }
-                fp = io.BytesIO(body)
-                form = cgi.FieldStorage(fp=fp, environ=environ, keep_blank_values=True)
+                # 手動解析 multipart/form-data
+                boundary = re.search(r'boundary=([^\s;]+)', ct)
+                if not boundary:
+                    raise Exception('找不到 multipart boundary')
+                boundary_str = boundary.group(1).encode()
 
-                video_field  = form['video']
-                prompt_field = form['prompt']
+                parts = {}
+                for part in body.split(b'--' + boundary_str):
+                    if b'\r\n\r\n' not in part:
+                        continue
+                    header_raw, _, part_body = part.partition(b'\r\n\r\n')
+                    part_body = part_body.rstrip(b'\r\n--')
+                    header_str = header_raw.decode('utf-8', errors='ignore')
 
-                filename  = video_field.filename or 'video.mp4'
-                mime_type = video_field.type or 'video/mp4'
-                file_data = video_field.file.read()
-                prompt    = prompt_field.value if hasattr(prompt_field, 'value') else prompt_field.file.read().decode()
+                    name_match = re.search(r'name="([^"]+)"', header_str)
+                    if not name_match:
+                        continue
+                    name = name_match.group(1)
+
+                    fname_match = re.search(r'filename="([^"]+)"', header_str)
+                    ct_match = re.search(r'Content-Type:\s*([^\r\n]+)', header_str)
+
+                    parts[name] = {
+                        'data': part_body,
+                        'filename': fname_match.group(1) if fname_match else None,
+                        'content_type': ct_match.group(1).strip() if ct_match else 'application/octet-stream'
+                    }
+
+                if 'video' not in parts:
+                    raise Exception('未收到影片檔案')
+                if 'prompt' not in parts:
+                    raise Exception('未收到 prompt')
+
+                filename  = parts['video']['filename'] or 'video.mp4'
+                mime_type = parts['video']['content_type']
+                file_data = parts['video']['data']
+                prompt    = parts['prompt']['data'].decode('utf-8')
 
                 print(f'\n[Server] 收到評鑑請求：{filename}')
 
