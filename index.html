@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VCR AI 評鑑機器人 — 東森購物</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--red:#e8001c;--red-dark:#b50016;--red-glow:rgba(232,0,28,0.15);--gold:#d4890a;--bg:#f5f5f7;--surface:#ffffff;--surface2:#f9f9fb;--surface3:#f0f0f4;--border:rgba(0,0,0,0.09);--text:#1a1a24;--text-dim:#666680;--text-faint:#b0b0c0;--green:#00a85a;--blue:#2478e8}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 1px 8px rgba(0,0,0,0.06)}
+.header-stripe{height:4px;background:linear-gradient(90deg,var(--red) 0%,var(--gold) 50%,var(--red) 100%);background-size:200% 100%;animation:stripeMove 3s linear infinite}
+@keyframes stripeMove{to{background-position:200% 0}}
+.header-inner{max-width:1100px;margin:0 auto;padding:28px 40px;display:flex;align-items:center;gap:24px}
+.brand-logo{background:var(--red);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;padding:8px 16px;border-radius:2px;flex-shrink:0}
+.header-eyebrow{font-size:10px;font-weight:500;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+.header-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,3.5vw,34px);letter-spacing:3px;line-height:1}
+.header-h1 span{color:var(--red)}.header-sub{font-size:12px;color:var(--text-dim);margin-top:5px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite;margin-left:auto}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.tabs{background:var(--surface);border-bottom:1px solid var(--border)}
+.tabs-inner{max-width:1100px;margin:0 auto;padding:0 40px;display:flex}
+.tab-btn{font-family:'Noto Sans TC',sans-serif;font-size:12px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:16px 24px;border:none;background:none;cursor:pointer;color:var(--text-dim);border-bottom:3px solid transparent;margin-bottom:-1px;transition:all 0.2s}
+.tab-btn.active{color:var(--text);border-bottom-color:var(--red)}.tab-btn:hover:not(.active){color:var(--text)}
+main{max-width:1100px;margin:0 auto;padding:40px 40px 80px}
+.panel{display:none}.panel.active{display:block}
+.form-section{margin-bottom:36px}.field{display:flex;flex-direction:column;gap:8px}
+label{font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)}
+input[type=text]{font-family:'Noto Sans TC',sans-serif;font-size:14px;padding:12px 16px;background:#fff;border:1.5px solid var(--border);color:var(--text);border-radius:4px;outline:none;transition:border-color 0.2s;width:100%}
+input[type=text]:focus{border-color:var(--red)}
+.upload-zone{border:2px dashed var(--border);border-radius:8px;padding:40px 32px;text-align:center;background:#fff;transition:all 0.2s}
+.upload-icon{font-size:40px;margin-bottom:12px;display:block}.upload-main{font-size:15px;font-weight:500;margin-bottom:6px}.upload-sub{font-size:12px;color:var(--text-dim);margin-bottom:16px}
+.file-preview{margin-top:16px;padding:12px 16px;background:var(--surface3);border:1.5px solid var(--border);border-radius:4px;display:none;align-items:center;gap:12px}
+.file-preview.show{display:flex}.file-icon{font-size:24px;flex-shrink:0}.file-info{flex:1;text-align:left}
+.file-name{font-size:13px;font-weight:500;word-break:break-all}.file-size{font-size:11px;color:var(--text-dim);margin-top:2px}
+.file-remove{background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:18px;padding:4px;transition:color 0.2s}.file-remove:hover{color:var(--red)}
+.submit-area{text-align:center;margin-top:36px}
+.btn-submit{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;padding:18px 64px;background:var(--red);color:#fff;border:none;cursor:pointer;border-radius:4px;transition:all 0.2s}
+.btn-submit:hover{background:var(--red-dark)}.btn-submit:disabled{background:var(--text-faint);cursor:not-allowed}
+.spinner-wrap{text-align:center;padding:60px 20px;display:none}
+.spinner-ring{width:56px;height:56px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}.spinner-msg{font-size:13px;color:var(--text-dim);letter-spacing:1px}
+.spinner-steps{margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.step-item{font-size:11px;color:var(--text-faint);transition:color 0.3s}.step-item.active{color:var(--gold)}.step-item.done{color:var(--green)}
+#ai-result{display:none;animation:fadeUp 0.5s ease;margin-top:40px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.result-hero{background:#fff;border:1px solid var(--border);border-radius:8px;padding:32px;margin-bottom:24px;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
+.result-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:24px}
+.result-eyebrow{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.result-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;line-height:1}
+.result-meta{font-size:12px;color:var(--text-dim);margin-top:4px}
+.verdict-badge{text-align:center;flex-shrink:0}
+.total-score{font-family:'Bebas Neue',sans-serif;font-size:68px;line-height:1;color:var(--red)}
+.total-score.gold{color:var(--gold)}.total-score.green{color:var(--green)}
+.total-label{font-size:11px;color:var(--text-dim);letter-spacing:2px;margin-top:2px}
+.verdict-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:2px;padding:4px 14px;border-radius:2px;margin-top:8px;text-transform:uppercase}
+.verdict-tag.excellent{background:var(--green);color:#fff}.verdict-tag.good{background:var(--gold);color:#fff}
+.verdict-tag.fair{background:#888;color:#fff}.verdict-tag.poor{background:var(--red);color:#fff}
+.five-dims{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.dim-card{background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:14px 10px;text-align:center}
+.dim-score{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1}
+.dim-bar{height:3px;background:var(--border);border-radius:2px;margin:8px 0;overflow:hidden}
+.dim-bar-fill{height:100%;border-radius:2px}.dim-name{font-size:10px;color:var(--text-dim);line-height:1.4}
+.result-sections{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.result-card{background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.result-card.full{grid-column:1/-1}
+.rc-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface3)}
+.rc-icon{font-size:16px}.rc-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
+.rc-body{padding:20px;font-size:13.5px;line-height:1.9;color:var(--text);white-space:pre-wrap;font-family:'Noto Serif TC',serif}
+.rc-body.mono{font-family:'Noto Sans TC',sans-serif;font-size:13px}
+.script-table{width:100%;border-collapse:collapse;font-size:12px}
+.script-table th{background:var(--surface3);color:var(--text-dim);font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border);text-align:left}
+.script-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.6}
+.script-table tr:last-child td{border-bottom:none}
+.tc-badge{background:var(--surface3);border:1px solid var(--border);border-radius:3px;padding:2px 8px;font-family:monospace;font-size:11px;color:var(--gold);white-space:nowrap}
+.sheet-status{margin-top:16px;padding:12px 16px;border-radius:4px;font-size:13px;display:flex;align-items:center;gap:8px}
+.sheet-status.ok{background:#edf7ed;color:var(--green);border:1px solid #c8e6c9}
+.sheet-status.err{background:#fff3f2;color:var(--red);border:1px solid #ffcdd2}
+.records-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.records-h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px}
+.btn-sm{font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:8px 20px;border:1.5px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;border-radius:4px;transition:all 0.2s}
+.btn-sm:hover{border-color:var(--text);color:var(--text)}
+.rec-card{background:#fff;border:1.5px solid var(--border);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.rec-top{display:flex;align-items:center;padding:16px 20px;gap:16px;cursor:pointer}
+.rec-info{flex:1}.rec-product{font-size:15px;font-weight:500;margin-bottom:3px}.rec-meta-row{font-size:11px;color:var(--text-dim)}
+.rec-score-col{text-align:right;flex-shrink:0}.rec-total{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1}
+.rec-total-label{font-size:10px;color:var(--text-dim);letter-spacing:1px}
+.rec-detail{border-top:1px solid var(--border);padding:18px 20px;display:none;background:var(--surface3)}
+.rec-detail.open{display:block}.rec-dim-row{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+.rec-dim{font-size:12px;color:var(--text-dim)}.rec-dim strong{color:var(--text);font-size:14px;display:block}
+.rec-comment-text{font-size:13px;line-height:1.8;color:var(--text-dim);white-space:pre-wrap;max-height:200px;overflow-y:auto}
+.empty-state{text-align:center;padding:80px 20px;color:var(--text-faint)}.es-icon{font-size:48px;margin-bottom:16px;display:block;opacity:0.3}
+@media(max-width:768px){.header-inner{padding:20px;gap:14px}main{padding:24px 20px 60px}.tabs-inner{padding:0 12px}.five-dims{grid-template-columns:repeat(2,1fr)}.result-sections{grid-template-columns:1fr}.result-card.full{grid-column:1}.result-hero-top{flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-stripe"></div>
+  <div class="header-inner">
+    <div class="brand-logo">ET Mall</div>
+    <div>
+      <div class="header-eyebrow">萬人萬面 · AI 智能評鑑系統</div>
+      <h1 class="header-h1">VCR <span>評鑑</span>機器人</h1>
+      <p class="header-sub">Video Content Review · 東森購物銷售影片 AI 深度分析平台</p>
+    </div>
+    <div class="status-dot"></div>
+  </div>
+</header>
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn active" onclick="switchTab('form',this)">🎬 上傳評鑑</button>
+    <button class="tab-btn" onclick="switchTab('records',this)">📊 歷史記錄</button>
+  </div>
+</div>
+<main>
+  <div id="tab-form" class="panel active">
+    <div class="form-section">
+      <div class="field">
+        <label>商品名稱（選填）</label>
+        <input type="text" id="product-name" placeholder="例：義大利橄欖油 500ml（不填也可以直接評鑑）">
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="upload-zone">
+        <span class="upload-icon">🎥</span>
+        <div class="upload-main">選取影片檔案</div>
+        <div class="upload-sub">支援 MP4、MOV、AVI · 建議 50MB 以內</div>
+        <input type="file" id="video-file" accept="video/*,.mp4,.mov,.avi,.wmv" style="display:block;margin:0 auto;font-size:14px;cursor:pointer">
+      </div>
+      <div class="file-preview" id="file-preview">
+        <span class="file-icon">🎬</span>
+        <div class="file-info">
+          <div class="file-name" id="file-name"></div>
+          <div class="file-size" id="file-size"></div>
+        </div>
+        <button class="file-remove" onclick="removeFile()">✕</button>
+      </div>
+    </div>
+    <div class="submit-area">
+      <button class="btn-submit" id="submit-btn" onclick="submitEval()">🤖 &nbsp;啟動 AI 深度評鑑</button>
+    </div>
+    <div class="spinner-wrap" id="spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-msg" id="spinner-msg">AI 正在深度分析影片，請稍候⋯⋯</div>
+      <div class="spinner-steps">
+        <div class="step-item" id="step1">▸ 上傳影片至 Gemini AI</div>
+        <div class="step-item" id="step2">▸ Gemini 深度解析影片畫面與聲音</div>
+        <div class="step-item" id="step3">▸ 行銷五力評分分析</div>
+        <div class="step-item" id="step4">▸ 撰寫總裁視角點評</div>
+        <div class="step-item" id="step5">▸ 輸出剪輯腳本優化報告</div>
+      </div>
+    </div>
+    <div id="ai-result"></div>
+  </div>
+  <div id="tab-records" class="panel">
+    <div class="records-header">
+      <div class="records-h2">評鑑歷史記錄</div>
+      <button class="btn-sm" onclick="loadRecords()">↻ 重新整理</button>
+    </div>
+    <div id="records-list">
+      <div class="empty-state"><span class="es-icon">📭</span><p>尚無評鑑記錄</p></div>
+    </div>
+  </div>
+</main>
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1fq3D964ZerzVxNYccKWPSXCKAIp3UWvU3CgPhqRV7WfB77b2-Ag7GLMn2uh_0JhkUQ/exec';
+const DIM_LABELS = ['前3秒吸睛力','商品展示說服力','影文銜接導流力','高齡UX友善度','購買渴望激發力'];
+const DIM_KEYS   = ['hook','demo','synergy','ux','desire'];
+let uploadedFile = null;
+
+document.getElementById('video-file').onchange = function() {
+  if (this.files && this.files[0]) handleFile(this.files[0]);
+};
+
+function handleFile(f) {
+  if (f.size > 50 * 1024 * 1024) { alert('檔案超過 50MB，請壓縮後再試'); return; }
+  uploadedFile = f;
+  document.getElementById('file-name').textContent = f.name;
+  document.getElementById('file-size').textContent = formatBytes(f.size) + '  ✅ 已選取，可按下方按鈕評鑑';
+  const p = document.getElementById('file-preview');
+  p.classList.add('show');
+  p.style.borderColor = 'var(--green)';
+}
+
+function removeFile() {
+  uploadedFile = null;
+  document.getElementById('video-file').value = '';
+  const p = document.getElementById('file-preview');
+  p.classList.remove('show');
+  p.style.borderColor = '';
+}
+
+function formatBytes(b) {
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function switchTab(t, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  btn.classList.add('active');
+  if (t === 'records') loadRecords();
+}
+
+function setStep(n, state) {
+  const el = document.getElementById('step' + n);
+  if (el) el.className = 'step-item' + (state ? ' ' + state : '');
+}
+function updateSpinnerMsg(msg) {
+  const el = document.getElementById('spinner-msg');
+  if (el) el.textContent = msg;
+}
+
+async function submitEval() {
+  if (!uploadedFile) { alert('請先選取影片檔案'); return; }
+  const payload = {
+    productName: document.getElementById('product-name').value.trim() || '（未填）',
+    fileName: uploadedFile.name,
+    timestamp: new Date().toLocaleString('zh-TW'),
+    videoType: '簡訊發送銷售影片（SMS VCR）',
+    targetAge: '50-80歲（既有會員）',
+    videoId: '（未填）', price: '（未填）'
+  };
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('ai-result').style.display = 'none';
+  try {
+    setStep(1,'active');
+    updateSpinnerMsg('正在上傳影片至伺服器…');
+    const fd = new FormData();
+    fd.append('video', uploadedFile, uploadedFile.name);
+    fd.append('prompt', buildPrompt(payload));
+    const resp = await fetch('/analyze', { method:'POST', body:fd });
+    setStep(1,'done'); setStep(2,'active');
+    updateSpinnerMsg('Gemini 正在深度解析影片…');
+    if (!resp.ok) {
+      const e = await resp.json().catch(()=>({}));
+      throw new Error(e.error || 'server 錯誤 ' + resp.status);
+    }
+    setStep(2,'done'); setStep(3,'active');
+    updateSpinnerMsg('AI 正在撰寫評鑑報告…');
+    const result = await parseResult(resp);
+    setStep(3,'done'); setStep(4,'done'); setStep(5,'done');
+    showResult(payload, result);
+    await saveToSheet({...payload, ...result});
+    saveToLocal({...payload, ...result});
+  } catch(e) {
+    alert('評鑑發生錯誤：' + e.message);
+    console.error(e);
+  } finally {
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('spinner').style.display = 'none';
+  }
+}
+
+function buildPrompt(p) {
+  return '你是「萬人萬面 AI VCR 評鑑機器人」，精通人類銷售心理學的行銷與銷售影片製作專家，對東森購物製作的商品提醒影片具備絕對的評審與優化能力。\n\n'
+    + '請仔細觀看上方提供的影片，針對這支東森購物銷售影片進行全面專業評鑑。\n\n'
+    + '商品名稱：' + p.productName + '\n'
+    + '目標受眾：' + p.targetAge + '（透過簡訊發送給既有會員，年齡層 50-80 歲）\n\n'
+    + '請輸出合法 JSON 物件，欄位如下（字串值不可包含未跳脫換行符）：\n'
+    + 'scores: 含 clarity/promo/language/visual/cta 各 0-20 整數\n'
+    + 'score_reasons: 五個評分理由字串（2-3句具體引用影片）\n'
+    + 'overall_analysis: 受眾分析、行銷視角、ROI、技術細節\n'
+    + 'strengths: 3項具體優點\nimprovements: 3項待改善\nsuggestions: 3條優化建議\n'
+    + 'president_view: 王令麟總裁視角點評150-200字\n'
+    + 'recut_script: 6個物件各含 order original_tc new_tc scene voiceover purpose\n'
+    + 'conclusion: 25字以內一句話總評';
+}
+
+async function parseResult(resp) {
+  // 先取得原始文字，不要直接 .json()
+  const rawText = await resp.text();
+
+  // 清理可能造成 JSON 解析失敗的字元
+  function cleanJson(str) {
+    return str
+      .replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/, '')
+      .trim();
+  }
+
+  function tryParse(str) {
+    str = cleanJson(str);
+    // 嘗試直接解析
+    try { return JSON.parse(str); } catch(e1) {}
+    // 嘗試抓最外層 {} 區塊
+    const m = str.match(/\{[\s\S]*\}/);
+    if (m) { try { return JSON.parse(m[0]); } catch(e2) {} }
+    return null;
+  }
+
+  // 正規化函數：修正所有可能的格式問題
+  function normalize(obj) {
+    if (!obj) return null;
+    const keys = ['clarity','promo','language','visual','cta'];
+    // score_reasons 陣列 → 物件
+    if (Array.isArray(obj.score_reasons)) {
+      obj.score_reasons = Object.fromEntries(keys.map((k,i) => [k, obj.score_reasons[i] || '']));
+    }
+    // scores 陣列 → 物件
+    if (Array.isArray(obj.scores)) {
+      obj.scores = Object.fromEntries(keys.map((k,i) => [k, obj.scores[i] || 0]));
+    }
+    // scores 不存在時建立預設值
+    if (!obj.scores || typeof obj.scores !== 'object') {
+      obj.scores = Object.fromEntries(keys.map(k => [k, 0]));
+    }
+    // score_reasons 不存在時建立空物件
+    if (!obj.score_reasons || typeof obj.score_reasons !== 'object') {
+      obj.score_reasons = Object.fromEntries(keys.map(k => [k, '']));
+    }
+    return obj;
+  }
+
+  // 格式1：rawText 本身就是評鑑 JSON
+  let result = tryParse(rawText);
+  if (result && result.scores) return normalize(result);
+
+  // 格式2：Gemini candidates 包裝
+  let data;
+  try { data = JSON.parse(rawText); } catch(e) {
+    throw new Error('Server 回傳無法解析：' + rawText.substring(0, 200));
+  }
+  if (data.scores) return normalize(data);
+  if (data.candidates) {
+    const text = data.candidates[0]?.content?.parts?.[0]?.text || '';
+    result = tryParse(text);
+    if (result && result.scores) return normalize(result);
+  }
+
+  throw new Error('Gemini 回傳格式錯誤：' + rawText.substring(0, 300));
+}
+
+function dc(s){return s>=16?'var(--green)':s>=12?'var(--gold)':'var(--red)'}
+
+function showResult(p, r) {
+  const total = DIM_KEYS.reduce((s,k)=>s+(r.scores?.[k]||0),0);
+  let vc='poor',vt='需大幅改進';
+  if(total>=85){vc='excellent';vt='優秀';}else if(total>=70){vc='good';vt='良好';}else if(total>=55){vc='fair';vt='普通';}
+  const tc=total>=85?'green':total>=70?'gold':'';
+
+  const el=document.getElementById('ai-result');
+  el.style.display='block';
+  el.innerHTML=`
+<div class="result-hero">
+  <div class="result-hero-top">
+    <div>
+      <div class="result-eyebrow">AI 評鑑完成 · ${p.timestamp}</div>
+      <div class="result-title">${esc(p.productName!=='（未填）'?p.productName:p.fileName)}</div>
+      <div class="result-meta">${esc(p.videoType)} · ${esc(p.targetAge)} · ${esc(p.fileName)}</div>
+      <div style="margin-top:10px"><span style="font-size:10px;background:rgba(36,120,232,0.1);color:var(--blue);border:1px solid rgba(36,120,232,0.3);padding:3px 10px;border-radius:3px;letter-spacing:1px">✦ GEMINI 2.5 FLASH</span></div>
+      <div style="margin-top:12px;font-size:13px;font-style:italic;color:var(--gold)">"${esc(r.conclusion)}"</div>
+    </div>
+    <div class="verdict-badge">
+      <div class="total-score ${tc}">${total}</div>
+      <div class="total-label">總分 / 100</div>
+      <div class="verdict-tag ${vc}">${vt}</div>
+    </div>
+  </div>
+</div>
+
+<!-- 五力評鑑（分數 + 描述整合） -->
+<div class="result-sections">
+  ${DIM_KEYS.map((k,i)=>{
+    const s=r.scores?.[k]||0;
+    const icons=['⚡','🎯','🔗','👴','💡'];
+    return '<div class="result-card"><div class="rc-head"><span class="rc-icon">'+icons[i]+'</span><span class="rc-title">'+DIM_LABELS[i]+'</span><span style="margin-left:auto;font-family:var(--font-display,monospace);font-size:22px;font-weight:700;color:'+dc(s)+'">'+s+'<span style="font-size:12px;color:var(--text-dim)">/20</span></span></div><div class="dim-bar" style="height:4px;background:var(--border);margin:0;border-radius:0"><div class="dim-bar-fill" style="width:'+(s/20*100).toFixed(0)+'%;background:'+dc(s)+';height:4px"></div></div><div class="rc-body mono">'+esc(r.score_reasons?.[k]||'')+'</div></div>';
+  }).join('')}
+</div>
+
+<!-- 總裁視角 -->
+<div class="result-sections" style="grid-template-columns:1fr">
+  <div class="result-card full" style="border-color:var(--gold)">
+    <div class="rc-head" style="background:rgba(212,137,10,0.08);border-bottom-color:rgba(212,137,10,0.2)"><span class="rc-icon">👔</span><span class="rc-title" style="color:var(--gold)">王令麟總裁視角點評</span></div>
+    <div class="rc-body">${esc(r.president_view||'')}</div>
+  </div>
+</div>
+
+<!-- 優點與待改善 -->
+<div class="result-sections">
+  <div class="result-card"><div class="rc-head"><span class="rc-icon">✅</span><span class="rc-title">影片優點</span></div><div class="rc-body" style="line-height:1.9">${fmtList(r.strengths||'')}</div></div>
+  <div class="result-card"><div class="rc-head"><span class="rc-icon">⚠️</span><span class="rc-title">待改善與優化建議</span></div><div class="rc-body" style="line-height:1.9">${fmtList(r.improvements||'')}</div></div>
+</div>
+
+<div id="sheet-status-box"></div>`;
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function saveToSheet(data) {
+  const box = document.getElementById('sheet-status-box');
+  if (!box) return;
+
+  const fn = uploadedFile ? uploadedFile.name : (data.fileName || '');
+  const pn = (data.productName && data.productName !== '（未填）') ? data.productName : fn;
+  const sheetPayload = {
+    timestamp:    data.timestamp        || new Date().toLocaleString('zh-TW'),
+    fileName:     fn,
+    productName:  pn,
+    targetAge:    data.targetAge        || '50-80歲（既有會員）',
+    scoreHook:    data.scores?.hook    || 0,
+    scoreDemo:    data.scores?.demo    || 0,
+    scoreSynergy: data.scores?.synergy || 0,
+    scoreUx:      data.scores?.ux      || 0,
+    scoreDesire:  data.scores?.desire  || 0,
+    total:        DIM_KEYS.reduce((s,k) => s + (data.scores?.[k]||0), 0),
+    conclusion:   data.conclusion       || '',
+    presidentView:(data.president_view  || '').substring(0, 500),
+    strengths:    (data.strengths       || '').substring(0, 500),
+    improvements: (data.improvements    || '').substring(0, 500)
+  };
+
+  box.innerHTML = '<div class="sheet-status warn">⏳ 正在寫入 Google Sheets…</div>';
+
+  try {
+    // 透過本機 server 代理寫入，避免 CORS 問題
+    const resp = await fetch('/save-sheet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sheetPayload)
+    });
+    const result = await resp.json();
+    if (result.success) {
+      box.innerHTML = '<div class="sheet-status ok">✅ 已成功寫入 Google Sheets 記錄</div>';
+    } else {
+      box.innerHTML = '<div class="sheet-status err">❌ 寫入失敗：' + (result.error || '未知錯誤') + '</div>';
+    }
+  } catch(e) {
+    box.innerHTML = '<div class="sheet-status err">❌ 寫入失敗：' + e.message + '</div>';
+  }
+}
+
+function saveToLocal(data) {
+  const list=JSON.parse(localStorage.getItem('vcr_etv_records')||'[]');
+  list.unshift({...data,id:Date.now()});
+  localStorage.setItem('vcr_etv_records',JSON.stringify(list.slice(0,100)));
+}
+
+function loadRecords() {
+  const list=JSON.parse(localStorage.getItem('vcr_etv_records')||'[]');
+  const c=document.getElementById('records-list');
+  if(!list.length){c.innerHTML='<div class="empty-state"><span class="es-icon">📭</span><p>尚無評鑑記錄</p></div>';return;}
+  c.innerHTML=list.map((r,i)=>{
+    const total=DIM_KEYS.reduce((s,k)=>s+(r.scores?.[k]||0),0);
+    const col=total>=85?'var(--green)':total>=70?'var(--gold)':'var(--red)';
+    return '<div class="rec-card"><div class="rec-top" onclick="toggleRec('+i+')">'
+      +'<div class="rec-info"><div class="rec-product">'+esc(r.productName||'（未知商品）')+'</div>'
+      +'<div class="rec-meta-row">'+esc(r.timestamp)+' · '+esc(r.fileName)+'</div></div>'
+      +'<div class="rec-score-col"><div class="rec-total" style="color:'+col+'">'+total+'</div>'
+      +'<div class="rec-total-label">/ 100</div></div></div>'
+      +'<div class="rec-detail" id="rec-'+i+'">'
+      +'<div class="rec-dim-row">'+DIM_KEYS.map((k,j)=>'<div class="rec-dim"><strong>'+(r.scores?.[k]||0)+'/20</strong>'+DIM_LABELS[j]+'</div>').join('')+'</div>'
+      +(r.conclusion?'<div style="font-size:13px;color:var(--gold);margin-bottom:10px;font-style:italic">"'+esc(r.conclusion)+'"</div>':'')
+      +'<div class="rec-comment-text">'+esc(r.overall_analysis||r.strengths||'（無詳細記錄）')+'</div>'
+      +'</div></div>';
+  }).join('');
+}
+
+function toggleRec(i){document.getElementById('rec-'+i).classList.toggle('open');}
+
+function fmtList(s) {
+  // 把 "1.xxx 2.xxx" 或 "1.xxx\n2.xxx" 都轉成每項獨立一行
+  return esc(s)
+    .replace(/(<br>)?\s*(\d+\.)/g, (m, br, num) => '<br><span style="font-weight:600">' + num + '</span>')
+    .replace(/^<br>/, ''); // 移除開頭多餘的 <br>
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');}
+</script>
+</body>
+</html>
