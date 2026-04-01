@@ -385,16 +385,7 @@ function showResult(p, r) {
 </div>
 
 <!-- 法規合規建議 -->
-${r.compliance ? \`<div class="result-sections" style="grid-template-columns:1fr;margin-bottom:0">
-  <div class="result-card full" style="border-color:#e53e3e">
-    <div class="rc-head" style="background:rgba(229,62,62,0.06);border-bottom-color:rgba(229,62,62,0.2)">
-      <span class="rc-icon">⚖️</span>
-      <span class="rc-title" style="color:#e53e3e">法規合規建議</span>
-      <span style="margin-left:auto;font-size:10px;color:var(--text-dim);background:rgba(229,62,62,0.08);padding:2px 8px;border-radius:3px">依台灣食藥署廣告法規</span>
-    </div>
-    <div class="rc-body" style="line-height:1.9">\${fmtList(r.compliance)}</div>
-  </div>
-</div>\` : \'\'}
+${r.compliance ? '<div class="result-sections" style="grid-template-columns:1fr"><div class="result-card full" style="border-color:#e53e3e"><div class="rc-head" style="background:rgba(229,62,62,0.06);border-bottom-color:rgba(229,62,62,0.2)"><span class="rc-icon">⚖️</span><span class="rc-title" style="color:#e53e3e">法規合規建議</span><span style="margin-left:8px;font-size:10px;color:#e53e3e;opacity:0.7">依台灣食藥署廣告法規</span></div><div class="rc-body" style="line-height:1.9">' + fmtList(r.compliance) + '</div></div></div>' : ''}
 <div id="sheet-status-box"></div>`;
   el.scrollIntoView({behavior:'smooth',block:'start'});
 }
