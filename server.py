@@ -10,7 +10,7 @@ import io
 # ================================================================
 # ★ 設定區 — 只需修改這裡
 # ================================================================
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyCqYKFtYzbeIwQFWHbCfq0fSs-XufvR0d8')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyD1_XoGFpfn8MWtf0olIGaL5ml9Ar3WzwE')
 PORT           = int(os.environ.get('PORT', 3000))
 # ================================================================
 
