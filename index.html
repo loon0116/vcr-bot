@@ -100,9 +100,9 @@ input[type=text]:focus{border-color:var(--red)}
   <div class="header-inner">
     <div class="brand-logo">ET Mall</div>
     <div>
-      <div class="header-eyebrow">萬人萬面 · AI 智能評鑑系統</div>
-      <h1 class="header-h1">VCR <span>評鑑</span>機器人</h1>
-      <p class="header-sub">Video Content Review · 東森購物銷售影片 AI 深度分析平台</p>
+      <div class="header-eyebrow">LINE群組專用 · AI 智能評鑑系統</div>
+      <h1 class="header-h1"><span style="color:#06C755">LINE@</span> AI <span>VCR</span>評鑑機器人</h1>
+      <p class="header-sub">Video Content Review · LINE群組銷售影片 AI 深度分析平台</p>
     </div>
     <div class="status-dot"></div>
   </div>
@@ -384,6 +384,17 @@ function showResult(p, r) {
   <div class="result-card"><div class="rc-head"><span class="rc-icon">⚠️</span><span class="rc-title">待改善與優化建議</span></div><div class="rc-body" style="line-height:1.9">${fmtList(r.improvements||'')}</div></div>
 </div>
 
+<!-- 法規合規建議 -->
+${r.compliance ? \`<div class="result-sections" style="grid-template-columns:1fr;margin-bottom:0">
+  <div class="result-card full" style="border-color:#e53e3e">
+    <div class="rc-head" style="background:rgba(229,62,62,0.06);border-bottom-color:rgba(229,62,62,0.2)">
+      <span class="rc-icon">⚖️</span>
+      <span class="rc-title" style="color:#e53e3e">法規合規建議</span>
+      <span style="margin-left:auto;font-size:10px;color:var(--text-dim);background:rgba(229,62,62,0.08);padding:2px 8px;border-radius:3px">依台灣食藥署廣告法規</span>
+    </div>
+    <div class="rc-body" style="line-height:1.9">\${fmtList(r.compliance)}</div>
+  </div>
+</div>\` : \'\'}
 <div id="sheet-status-box"></div>`;
   el.scrollIntoView({behavior:'smooth',block:'start'});
 }
