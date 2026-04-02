@@ -1370,7 +1370,8 @@ def save_to_sheets_direct(payload_bytes):
             d.get('conclusion', ''),
             d.get('presidentView', ''),
             d.get('strengths', ''),
-            d.get('improvements', '')
+            d.get('improvements', ''),
+            d.get('compliance', '')
         ]
         print('[Sheets] 傳送陣列（' + str(len(row)) + '欄）：' + str(row))
 

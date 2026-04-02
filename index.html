@@ -410,7 +410,8 @@ async function saveToSheet(data) {
     conclusion:   data.conclusion       || '',
     presidentView:(data.president_view  || '').substring(0, 500),
     strengths:    (data.strengths       || '').substring(0, 500),
-    improvements: (data.improvements    || '').substring(0, 500)
+    improvements: (data.improvements    || '').substring(0, 500),
+    compliance:   (data.compliance      || '').substring(0, 1000)
   };
 
   box.innerHTML = '<div class="sheet-status warn">⏳ 正在寫入 Google Sheets…</div>';
