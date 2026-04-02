@@ -1297,22 +1297,20 @@ A5：例句或類似詞句：
     print('[Gemini] 原始回傳前300字：' + raw[:300])
 
     def fix_newlines(s):
-        """把字串值內的真實換行符轉成合法跳脫序列"""
-        result = []
-        in_str = False
-        i = 0
-        while i < len(s):
-            c = s[i]
-            if c == '"' and (i == 0 or s[i-1] != '\\'):
-                in_str = not in_str
-            if in_str and c == '\n':
-                result.append('\\n')
-            elif in_str and c == '\r':
-                result.append('\\r')
-            else:
-                result.append(c)
-            i += 1
-        return ''.join(result)
+        """修正 Gemini 回傳 JSON 的常見問題：
+        1. 字串值內的真實換行符（用 regex 正確識別字串邊界）
+        2. 尾隨逗號 trailing commas（如 {"a":1,} 或 [1,2,]）
+        """
+        # Step 1: 修正字串值內的真實換行/定位符
+        def fix_str(m):
+            inner = m.group(1)
+            inner = inner.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+            return '"' + inner + '"'
+        # [^"\\] 匹配除 " 和 \ 以外的任意字元（含換行）；\\. 匹配跳脫序列
+        s = _re.sub(r'"((?:[^"\\]|\\.)*)"', fix_str, s, flags=_re.DOTALL)
+        # Step 2: 移除尾隨逗號（trailing commas）
+        s = _re.sub(r',\s*([}\]])', r'\1', s)
+        return s
 
     # Step1: 解析外層（candidates 包裝）
     try:
