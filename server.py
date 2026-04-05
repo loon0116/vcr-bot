@@ -112,7 +112,7 @@ def normalize_result(obj, keys):
 
 def generate_content(file_uri, mime_type, prompt):
     import json as _json, re as _re
-    DIM_KEYS = ['clarity', 'promo', 'language', 'visual', 'cta']
+    DIM_KEYS = ['hook', 'demo', 'ux', 'desire', 'script']
 
     print('[Gemini] 開始 AI 分析…')
 
@@ -1250,13 +1250,13 @@ A5：例句或類似詞句：
  診斷試劑及其相關物品，其設計及使用係以藥
 
 {
-  "scores": {"hook": 整數0-20, "demo": 整數0-20, "synergy": 整數0-20, "ux": 整數0-20, "desire": 整數0-20},
+  "scores": {"hook": 整數0-20, "demo": 整數0-20, "ux": 整數0-20, "desire": 整數0-20, "script": 整數0-20},
   "score_reasons": {
-    "hook": "前3秒吸睛力評分理由：標題字體大小、視覺衝擊、是否立刻切入長輩核心問題（一句話）",
-    "demo": "商品展示說服力評分理由：特寫、使用前後對比、見證是否讓長輩覺得品質好（一句話）",
-    "synergy": "影文銜接導流力評分理由：結尾是否有語音或字幕引導往下看文字（一句話）",
-    "ux": "高齡UX友善度評分理由：字幕大小、語速節奏、色調明亮度（一句話）",
-    "desire": "購買渴望激發力評分理由：是否塑造美好願景或不買可惜的心理暗示（一句話）"
+    "hook": "開場3秒勾留力評分理由：開場畫面是否精準命中長輩痛點即視感、視覺衝擊力與標題清晰度是否讓人不划走（一句話）",
+    "demo": "商品賣點傳達力評分理由：影片製作是否清楚展現商品核心賣點，包括特寫鏡頭、功效演示、視覺化呈現（一句話）",
+    "ux": "高齡觀看友善度評分理由：字幕字體大小、語速節奏、單CUT停留秒數、畫面明亮度是否適合50-80歲長輩（一句話）",
+    "desire": "渴望購買激發力評分理由：是否結合說服力（背書/見證）、情感共鳴（痛點+願景），讓長輩產生想擁有的渴望（一句話）",
+    "script": "腳本創意敘事力評分理由：是否有清楚敘事弧度（痛點→加深→解方→佐證），腳本創意與故事張力是否讓人看完不無聊（一句話）"
   },
   "strengths": "條列3-5項影片優點，每項說明清楚重點，每項30字以內，各項之間用\n分隔，格式：1.優點說明\n2.優點說明\n3.優點說明",
   "improvements": "條列3-5項待改善問題並附具體建議，每項說明清楚重點，每項30字以內，各項之間用\n分隔，格式：1.問題→建議\n2.問題→建議\n3.問題→建議",
@@ -1361,9 +1361,9 @@ def save_to_sheets_direct(payload_bytes):
             d.get('targetAge', ''),
             d.get('scoreHook', 0),
             d.get('scoreDemo', 0),
-            d.get('scoreSynergy', 0),
             d.get('scoreUx', 0),
             d.get('scoreDesire', 0),
+            d.get('scoreScript', 0),
             d.get('total', 0),
             d.get('conclusion', ''),
             d.get('presidentView', ''),

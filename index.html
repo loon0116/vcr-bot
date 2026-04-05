@@ -165,8 +165,8 @@ input[type=text]:focus{border-color:var(--red)}
 </main>
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1fq3D964ZerzVxNYccKWPSXCKAIp3UWvU3CgPhqRV7WfB77b2-Ag7GLMn2uh_0JhkUQ/exec';
-const DIM_LABELS = ['前3秒吸睛力','商品展示說服力','影文銜接導流力','高齡UX友善度','購買渴望激發力'];
-const DIM_KEYS   = ['hook','demo','synergy','ux','desire'];
+const DIM_LABELS = ['開場3秒勾留力','商品賣點傳達力','高齡觀看友善度','渴望購買激發力','腳本創意敘事力'];
+const DIM_KEYS   = ['hook','demo','ux','desire','script'];
 let uploadedFile = null;
 
 document.getElementById('video-file').onchange = function() {
@@ -403,9 +403,9 @@ async function saveToSheet(data) {
     targetAge:    data.targetAge        || '50-80歲（既有會員）',
     scoreHook:    data.scores?.hook    || 0,
     scoreDemo:    data.scores?.demo    || 0,
-    scoreSynergy: data.scores?.synergy || 0,
     scoreUx:      data.scores?.ux      || 0,
     scoreDesire:  data.scores?.desire  || 0,
+    scoreScript:  data.scores?.script  || 0,
     total:        DIM_KEYS.reduce((s,k) => s + (data.scores?.[k]||0), 0),
     conclusion:   data.conclusion       || '',
     presidentView:(data.president_view  || '').substring(0, 500),
