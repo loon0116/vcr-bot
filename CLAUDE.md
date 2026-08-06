@@ -58,8 +58,9 @@ HOST = '0.0.0.0'  # 雲端部署必須
 
 **Prompt 結構：**
 1. 系統角色設定（簡訊 VCR 評分專家）
-2. 完整台灣廣告法規條文（食品、化粧品認定準則含附件一～四）
-3. 輸出 JSON 格式要求
+2. 評分底層邏輯（最優先規則）：先判斷是否為商品行銷影片——明顯不是→嚴格評分、總分可低於60；符合行銷概念→總分維持80-96（普通80-85／良好86-90／優秀91-96）
+3. 完整台灣廣告法規條文（食品、化粧品認定準則含附件一～四）
+4. 輸出 JSON 格式要求
 
 **輸出 JSON 欄位：**
 ```json
@@ -119,6 +120,7 @@ function doPost(e) {
 ### API Key 安全
 - **絕對不能把 GEMINI_API_KEY 寫入 server.py 程式碼**
 - Key 只能存在 Cloud Run 環境變數
+- 查看/更換 Key 的路徑：Cloud Run → vcr-bot 服務 → 編輯及部署新修訂版本 → 「變數與密鑰」；Key 產生自 Google AI Studio（aistudio.google.com → API keys，專案 AI VCR-test）
 - GitHub 公開 repo 會被 Google 自動掃描，Key 出現就會被封鎖
 - 傳 Key 給 Claude 時直接貼文字，不要截圖（截圖也可能被掃描）
 - **服務帳戶金鑰檔（串google sheet金鑰ai-vcr-test-*.json）絕對不能進 GitHub repo**：本機資料夾內有此檔案，且 Dockerfile 是 `COPY . .`——上傳 GitHub 前務必確認 repo 沒有它，並加入 `.gitignore`（目前程式未使用此金鑰，寫入 Sheets 走 Apps Script URL）
@@ -161,7 +163,7 @@ function doPost(e) {
 - ✅ 法規合規建議區塊（依台灣食藥署完整法規審核）
 
 ### 介面
-- ✅ 簡訊AI VCR評分機器人標題（2026-08-06 更名，原「LINE@ AI VCR評鑑機器人」）
+- ✅ 簡訊AI VCR評分機器人標題（「AI VCR」為東森紅，2026-08-06 更名，原「LINE@ AI VCR評鑑機器人」）
 - ✅ 白色介面、深色文字
 - ✅ 五力評分卡片（分數+進度條+描述整合）
 - ✅ 總裁視角區塊（金色邊框）
@@ -188,14 +190,15 @@ function doPost(e) {
 |------|------|---------|
 | v1 | 初始版 | 五力：前3秒吸睛力、商品展示說服力、影文銜接導流力、高齡UX友善度、購買渴望激發力（keys: hook/demo/synergy/ux/desire） |
 | v3 | 2026-04-05 | **五力全面改版**：移除 synergy，新增 script（腳本創意敘事力）；評鑑對象從「商品」改為「影片製作品質」；desire 整合信任+共鳴+願景三力。Keys: hook/demo/ux/desire/script。Google Sheets 工作表1 標題列已手動更新，Apps Script 維持寫入工作表1。**v3 已部署上線**（2026-08-06 經線上實測截圖確認：五力 v3 評分、總裁視角、法規合規區塊均正常運作） |
-| v3.1 | 2026-08-06 | **專案更名**：「LINE@ AI VCR評鑑機器人」→「簡訊AI VCR評分機器人」。同步修改：index.html 標題區（title/主標/眉標/副標）、server.py prompt（評分專家角色、總裁點評與一句話總評的「LINE群組」→「簡訊」情境）、CLAUDE.md 與評分指標說明.txt。**待推 GitHub 後生效** |
+| v3.1 | 2026-08-06（上午） | **專案更名**：「LINE@ AI VCR評鑑機器人」→「簡訊AI VCR評分機器人」（主標「AI VCR」標為東森紅）。同步修改：index.html 標題區（title/主標/眉標/副標）、server.py prompt（評分專家角色、總裁點評與一句話總評的「LINE群組」→「簡訊」情境）、CLAUDE.md 與評分指標說明.txt。**待推 GitHub 後生效（僅需推 index.html、server.py 共 2 檔）** |
+| v3.2 | 2026-08-06 | **新增評分底層邏輯**（server.py prompt 最優先規則）：影片明顯非商品行銷影片→嚴格依五力評分、總分可低於60分；符合商品行銷概念→總分維持80-96分（普通80-85／良好86-90／優秀91-96）。**待推 GitHub 後生效** |
 
 ---
 
 ## 7. 尚未完成或待處理的功能
 
 ### 部署同步
-- ⬜ **待推上 GitHub：index.html、server.py（v3.1 更名 + 30MB 攔截）**：本機版標題已更名為「簡訊AI VCR評分機器人」、上傳說明改為「上限 30MB（建議壓縮至 720p）」並攔截超標檔案；線上版（2026-08-06 確認）仍為舊標題「LINE@ AI VCR評鑑機器人」與「建議 50MB 以內」，使用者上傳超過 32MB 會直接失敗且無友善提示
+- ⬜ **待推上 GitHub：index.html、server.py（v3.1 更名 + 30MB 攔截 + v3.2 評分底層邏輯）**：本機版標題已更名為「簡訊AI VCR評分機器人」、上傳說明改為「上限 30MB（建議壓縮至 720p）」並攔截超標檔案；線上版（2026-08-06 確認）仍為舊標題「LINE@ AI VCR評鑑機器人」與「建議 50MB 以內」，使用者上傳超過 32MB 會直接失敗且無友善提示
 
 ### 穩定性
 - ⬜ 偶發性 JSON 解析錯誤（已加重試機制，但根本修正需要更穩健的 fix_newlines）
