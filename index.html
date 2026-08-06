@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VCR AI 評鑑機器人 — 東森購物</title>
+<title>簡訊AI VCR評分機器人 — 東森購物</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--red:#e8001c;--red-dark:#b50016;--red-glow:rgba(232,0,28,0.15);--gold:#d4890a;--bg:#f5f5f7;--surface:#ffffff;--surface2:#f9f9fb;--surface3:#f0f0f4;--border:rgba(0,0,0,0.09);--text:#1a1a24;--text-dim:#666680;--text-faint:#b0b0c0;--green:#00a85a;--blue:#2478e8}
@@ -100,9 +100,9 @@ input[type=text]:focus{border-color:var(--red)}
   <div class="header-inner">
     <div class="brand-logo">ET Mall</div>
     <div>
-      <div class="header-eyebrow">LINE群組專用 · AI 智能評鑑系統</div>
-      <h1 class="header-h1"><span style="color:#06C755">LINE@</span> AI <span>VCR</span>評鑑機器人</h1>
-      <p class="header-sub">Video Content Review · LINE群組銷售影片 AI 深度分析平台</p>
+      <div class="header-eyebrow">簡訊發送專用 · AI 智能評分系統</div>
+      <h1 class="header-h1">簡訊<span>AI VCR</span>評分機器人</h1>
+      <p class="header-sub">Video Content Review · 簡訊銷售影片 AI 深度分析平台</p>
     </div>
     <div class="status-dot"></div>
   </div>
@@ -125,7 +125,7 @@ input[type=text]:focus{border-color:var(--red)}
       <div class="upload-zone">
         <span class="upload-icon">🎥</span>
         <div class="upload-main">選取影片檔案</div>
-        <div class="upload-sub">支援 MP4、MOV、AVI · 建議 50MB 以內</div>
+        <div class="upload-sub">支援 MP4、MOV、AVI · 上限 30MB（建議壓縮至 720p）</div>
         <input type="file" id="video-file" accept="video/*,.mp4,.mov,.avi,.wmv" style="display:block;margin:0 auto;font-size:14px;cursor:pointer">
       </div>
       <div class="file-preview" id="file-preview">
@@ -174,7 +174,7 @@ document.getElementById('video-file').onchange = function() {
 };
 
 function handleFile(f) {
-  if (f.size > 50 * 1024 * 1024) { alert('檔案超過 50MB，請壓縮後再試'); return; }
+  if (f.size > 30 * 1024 * 1024) { alert('檔案超過 30MB，請壓縮後再試（Cloud Run 上傳上限為 32MB）'); return; }
   uploadedFile = f;
   document.getElementById('file-name').textContent = f.name;
   document.getElementById('file-size').textContent = formatBytes(f.size) + '  ✅ 已選取，可按下方按鈕評鑑';
@@ -256,7 +256,7 @@ async function submitEval() {
 }
 
 function buildPrompt(p) {
-  return '你是「萬人萬面 AI VCR 評鑑機器人」，精通人類銷售心理學的行銷與銷售影片製作專家，對東森購物製作的商品提醒影片具備絕對的評審與優化能力。\n\n'
+  return '你是「簡訊AI VCR評分機器人」，精通人類銷售心理學的行銷與銷售影片製作專家，對東森購物製作的商品提醒影片具備絕對的評審與優化能力。\n\n'
     + '請仔細觀看上方提供的影片，針對這支東森購物銷售影片進行全面專業評鑑。\n\n'
     + '商品名稱：' + p.productName + '\n'
     + '目標受眾：' + p.targetAge + '（透過簡訊發送給既有會員，年齡層 50-80 歲）\n\n'
