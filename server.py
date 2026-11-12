@@ -1286,7 +1286,7 @@ A5：例句或類似詞句：
     }).encode('utf-8')
 
     status, _, body = https_request(
-        f'{GEMINI_BASE}/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}',
+        f'{GEMINI_BASE}/v1beta/models/gemini-3.8-flash:generateContent?key={GEMINI_API_KEY}',
         method='POST',
         data=req_body,
         headers={

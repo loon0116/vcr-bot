@@ -2,7 +2,7 @@
 
 ## 1. 專案說明
 
-東森購物簡訊（SMS）銷售影片專用的 AI 評分系統（2026-08-06 由「LINE@ AI VCR評鑑機器人」更名）。使用者上傳 VCR 影片，系統透過 Google Gemini 2.5 Flash 進行 AI 深度分析，輸出行銷五力評分、總裁視角點評、法規合規建議，並自動記錄到 Google Sheets。
+東森購物簡訊（SMS）銷售影片專用的 AI 評分系統（2026-08-06 由「LINE@ AI VCR評鑑機器人」更名）。使用者上傳 VCR 影片，系統透過 Google Gemini 3.8 Flash 進行 AI 深度分析，輸出行銷五力評分、總裁視角點評、法規合規建議，並自動記錄到 Google Sheets。
 
 **目標使用者**：東森購物行銷/製作團隊  
 **使用場景**：簡訊發送銷售影片（SMS VCR）評分，目標受眾為 50-80 歲長輩
@@ -18,7 +18,7 @@ Google Cloud Run（server.py）
     ↓ 上傳影片
 Gemini Files API（影片處理）
     ↓ 分析
-Gemini 2.5 Flash（AI 評鑑）
+Gemini 3.8 Flash（AI 評鑑）
     ↓ 結果
 前端顯示 + 寫入 Google Sheets（Apps Script）
 ```
@@ -27,7 +27,7 @@ Gemini 2.5 Flash（AI 評鑑）
 |------|------|------|
 | 前端 | HTML/CSS/JS（單一檔案） | 上傳介面、評鑑結果顯示 |
 | 後端 | Python 3.11（無第三方套件） | 影片代理上傳、Gemini 呼叫、JSON 正規化 |
-| AI | Gemini 2.5 Flash | 影片分析、評分、法規審核 |
+| AI | Gemini 3.8 Flash | 影片分析、評分、法規審核 |
 | 雲端 | Google Cloud Run（asia-east1 台灣） | 容器化部署 |
 | 程式碼 | GitHub（loon0116/vcr-bot） | 原始碼托管、自動部署 |
 | 記錄 | Google Sheets + Apps Script | 評鑑結果儲存 |
@@ -48,7 +48,7 @@ HOST = '0.0.0.0'  # 雲端部署必須
 
 **主要功能：**
 - `upload_to_gemini()` — Resumable upload 兩步驟上傳影片到 Gemini Files API，等待 ACTIVE 狀態
-- `generate_content()` — 呼叫 Gemini 2.5 Flash 分析，包含完整法規 prompt
+- `generate_content()` — 呼叫 Gemini 3.8 Flash 分析，包含完整法規 prompt
 - `fix_newlines()` — 修正 Gemini 回傳 JSON 中的非法換行符
 - `normalize_result()` — 修正 score_reasons 陣列→物件格式
 - `save_to_sheets_direct()` — 代理寫入 Google Sheets（繞過 CORS）
@@ -153,7 +153,7 @@ function doPost(e) {
 
 ### 核心評鑑
 - ✅ 影片上傳（MP4/MOV/AVI，上限 30MB，Cloud Run 硬限制 32MB）
-- ✅ Gemini 2.5 Flash 影片分析
+- ✅ Gemini 3.8 Flash 影片分析
 - ✅ 五力評分 v3（開場3秒勾留力、商品賣點傳達力、高齡觀看友善度、渴望購買激發力、腳本創意敘事力）
 - ✅ 各維度評分理由顯示
 - ✅ 影片優點條列（換行格式）
@@ -192,6 +192,7 @@ function doPost(e) {
 | v3 | 2026-04-05 | **五力全面改版**：移除 synergy，新增 script（腳本創意敘事力）；評鑑對象從「商品」改為「影片製作品質」；desire 整合信任+共鳴+願景三力。Keys: hook/demo/ux/desire/script。Google Sheets 工作表1 標題列已手動更新，Apps Script 維持寫入工作表1。**v3 已部署上線**（2026-08-06 經線上實測截圖確認：五力 v3 評分、總裁視角、法規合規區塊均正常運作） |
 | v3.1 | 2026-08-06（上午） | **專案更名**：「LINE@ AI VCR評鑑機器人」→「簡訊AI VCR評分機器人」（主標「AI VCR」標為東森紅）。同步修改：index.html 標題區（title/主標/眉標/副標）、server.py prompt（評分專家角色、總裁點評與一句話總評的「LINE群組」→「簡訊」情境）、CLAUDE.md 與評分指標說明.txt。**待推 GitHub 後生效（僅需推 index.html、server.py 共 2 檔）** |
 | v3.2 | 2026-08-06 | **新增評分底層邏輯**（server.py prompt 最優先規則）：影片明顯非商品行銷影片→嚴格依五力評分、總分可低於60分；符合商品行銷概念→總分維持80-96分（普通80-85／良好86-90／優秀91-96）。**待推 GitHub 後生效** |
+| v3.3 | 2026-11-12 | **更換 API Key 與模型升級**：原 Gemini API Key 因 Prepay 餘額耗盡回傳 HTTP 402，已在 AI Studio 以新專案建立新 Key 並更新至 Cloud Run 環境變數；新 Key 屬新用戶，gemini-2.5-flash 已停用（HTTP 404），模型改為 **gemini-3.8-flash**（server.py 端點 + index.html 徽章）。**待推 GitHub 後生效** |
 
 ---
 
@@ -236,7 +237,7 @@ function doPost(e) {
 | Cloud Run 區域 | asia-east1（台灣） |
 | Apps Script URL | `https://script.google.com/macros/s/AKfycbz1fq3D964ZerzVxNYccKWPSXCKAIp3UWvU3CgPhqRV7WfB77b2-Ag7GLMn2uh_0JhkUQ/exec` |
 | Google Sheets | AI VCR 評分（工作表1，標題列已於 2026-04-05 更新為 v3 五力） |
-| Gemini 模型 | gemini-2.5-flash |
+| Gemini 模型 | gemini-3.8-flash（2026-11-12 由 gemini-2.5-flash 升級，舊模型對新用戶停用） |
 
 ---
 
