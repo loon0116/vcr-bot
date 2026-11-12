@@ -11,6 +11,7 @@ import io
 # ★ 設定區 — 只需修改這裡
 # ================================================================
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_MODEL   = os.environ.get('GEMINI_MODEL', 'gemini-3.1-flash-lite')  # 可在 Cloud Run 環境變數切換模型，不用改程式
 PORT           = int(os.environ.get('PORT', 3000))
 # ================================================================
 
@@ -1286,7 +1287,7 @@ A5：例句或類似詞句：
     }).encode('utf-8')
 
     status, _, body = https_request(
-        f'{GEMINI_BASE}/v1beta/models/gemini-3.8-flash:generateContent?key={GEMINI_API_KEY}',
+        f'{GEMINI_BASE}/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}',
         method='POST',
         data=req_body,
         headers={
@@ -1535,17 +1536,22 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
                 file_uri = upload_to_gemini(file_data, filename, mime_type)
 
-                # 自動重試最多 3 次（處理偶發 JSON 格式錯誤）
+                # 自動重試最多 5 次，遞增等待（處理 503/429 模型尖峰與偶發 JSON 格式錯誤）
+                retry_delays = [5, 15, 30, 45]
                 last_err = None
                 result = None
-                for attempt in range(3):
+                for attempt in range(5):
                     try:
                         result = generate_content(file_uri, mime_type, prompt)
                         break
                     except Exception as e:
                         last_err = e
-                        print(f'[Gemini] 第 {attempt+1} 次嘗試失敗：{e}，重試中...')
-                        time.sleep(2)
+                        if attempt < 4:
+                            wait = retry_delays[attempt]
+                            print(f'[Gemini] 第 {attempt+1} 次嘗試失敗：{e}，{wait} 秒後重試...')
+                            time.sleep(wait)
+                        else:
+                            print(f'[Gemini] 第 {attempt+1} 次嘗試失敗：{e}，已達重試上限')
                 if result is None:
                     raise last_err
 

@@ -27,7 +27,7 @@ Gemini 3.8 Flash（AI 評鑑）
 |------|------|------|
 | 前端 | HTML/CSS/JS（單一檔案） | 上傳介面、評鑑結果顯示 |
 | 後端 | Python 3.11（無第三方套件） | 影片代理上傳、Gemini 呼叫、JSON 正規化 |
-| AI | Gemini 3.8 Flash | 影片分析、評分、法規審核 |
+| AI | Gemini（預設 gemini-3.1-flash-lite，可用環境變數 GEMINI_MODEL 切換） | 影片分析、評分、法規審核 |
 | 雲端 | Google Cloud Run（asia-east1 台灣） | 容器化部署 |
 | 程式碼 | GitHub（loon0116/vcr-bot） | 原始碼托管、自動部署 |
 | 記錄 | Google Sheets + Apps Script | 評鑑結果儲存 |
@@ -42,6 +42,7 @@ Python 後端伺服器，核心邏輯全在這裡。
 **重要設定：**
 ```python
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')  # 只從環境變數讀取，不寫入程式碼
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3.1-flash-lite')  # 模型可在 Cloud Run 環境變數切換
 PORT = int(os.environ.get('PORT', 3000))
 HOST = '0.0.0.0'  # 雲端部署必須
 ```
@@ -54,7 +55,7 @@ HOST = '0.0.0.0'  # 雲端部署必須
 - `save_to_sheets_direct()` — 代理寫入 Google Sheets（繞過 CORS）
 - `/analyze` — 主要評鑑端點
 - `/save-sheet` — Google Sheets 寫入端點
-- 自動重試機制 — 評鑑失敗最多重試 3 次
+- 自動重試機制 — 評鑑失敗最多重試 5 次，遞增等待 5/15/30/45 秒（因應 503/429 模型尖峰）
 
 **Prompt 結構：**
 1. 系統角色設定（簡訊 VCR 評分專家）
@@ -193,6 +194,8 @@ function doPost(e) {
 | v3.1 | 2026-08-06（上午） | **專案更名**：「LINE@ AI VCR評鑑機器人」→「簡訊AI VCR評分機器人」（主標「AI VCR」標為東森紅）。同步修改：index.html 標題區（title/主標/眉標/副標）、server.py prompt（評分專家角色、總裁點評與一句話總評的「LINE群組」→「簡訊」情境）、CLAUDE.md 與評分指標說明.txt。**待推 GitHub 後生效（僅需推 index.html、server.py 共 2 檔）** |
 | v3.2 | 2026-08-06 | **新增評分底層邏輯**（server.py prompt 最優先規則）：影片明顯非商品行銷影片→嚴格依五力評分、總分可低於60分；符合商品行銷概念→總分維持80-96分（普通80-85／良好86-90／優秀91-96）。**待推 GitHub 後生效** |
 | v3.3 | 2026-11-12 | **更換 API Key 與模型升級**：原 Gemini API Key 因 Prepay 餘額耗盡回傳 HTTP 402，已在 AI Studio 以新專案建立新 Key 並更新至 Cloud Run 環境變數；新 Key 屬新用戶，gemini-2.5-flash 已停用（HTTP 404），模型改為 **gemini-3.8-flash**（server.py 端點 + index.html 徽章）。**待推 GitHub 後生效** |
+| v3.4 | 2026-11-12 | **模型改為環境變數設定 + 重試強化**：gemini-3.8-flash 頻繁 503（高峰滿載），server.py 新增 `GEMINI_MODEL` 環境變數（預設 **gemini-3.5-flash-lite**，與 2.5-flash 同價且較不塞車；在 Cloud Run 設 GEMINI_MODEL 即可切換，不用改程式）；重試從 3 次/2秒 改為 5 次/遞增等待 5-45 秒；index.html 模型徽章改為通用「GOOGLE GEMINI」。**待推 GitHub 後生效** |
+| v3.5 | 2026-11-12 | **預設模型改為 gemini-3.1-flash-lite**（使用者指定，$0.25/$1.50 最經濟；注意官方公告 2027-05-07 關閉，屆時需換模型）。**待推 GitHub 後生效** |
 
 ---
 
@@ -237,7 +240,7 @@ function doPost(e) {
 | Cloud Run 區域 | asia-east1（台灣） |
 | Apps Script URL | `https://script.google.com/macros/s/AKfycbz1fq3D964ZerzVxNYccKWPSXCKAIp3UWvU3CgPhqRV7WfB77b2-Ag7GLMn2uh_0JhkUQ/exec` |
 | Google Sheets | AI VCR 評分（工作表1，標題列已於 2026-04-05 更新為 v3 五力） |
-| Gemini 模型 | gemini-3.8-flash（2026-11-12 由 gemini-2.5-flash 升級，舊模型對新用戶停用） |
+| Gemini 模型 | 預設 gemini-3.1-flash-lite（$0.25/$1.50 每百萬 token，官方公告 2027-05-07 關閉，屆時需改用新模型）；可在 Cloud Run 設環境變數 GEMINI_MODEL 切換（如 gemini-3.8-flash），改完部署新修訂版本即生效 |
 
 ---
 
